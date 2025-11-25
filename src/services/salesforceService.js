@@ -36,9 +36,18 @@ class SalesforceService {
 
   // Login with username and password
   async login(username, password, instanceUrl = 'https://login.salesforce.com') {
+    console.log('[SalesforceService] Creating connection with loginUrl:', instanceUrl);
     this.conn = new jsforce.Connection({ loginUrl: instanceUrl });
-    const userInfo = await this.conn.login(username, password);
-    return userInfo;
+
+    console.log('[SalesforceService] Attempting login...');
+    try {
+      const userInfo = await this.conn.login(username, password);
+      console.log('[SalesforceService] Login successful, userInfo:', userInfo);
+      return userInfo;
+    } catch (error) {
+      console.error('[SalesforceService] Login failed:', error);
+      throw error;
+    }
   }
 
   // Get all custom objects
