@@ -230,3 +230,41 @@
   align-items: center;
   justify-content: center;
 }
+
+.saved-credentials {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.saved-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.saved-label {
+  color: #166534;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.change-button {
+  padding: 4px 12px;
+  background: white;
+  border: 1px solid #86efac;
+  border-radius: 4px;
+  color: #166534;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.change-button:hover {
+  background: #dcfce7;
+  border-color: #4ade80;
+}

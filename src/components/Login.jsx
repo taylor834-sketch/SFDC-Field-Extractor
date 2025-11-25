@@ -1,15 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import salesforceService from '../services/salesforceService';
 import './Login.css';
 
-// Default Client ID - you'll need to replace this with your own
-const DEFAULT_CLIENT_ID = ''; // Leave empty for now - user will set up their own
+// LocalStorage keys
+const STORAGE_KEY_CLIENT_ID = 'sf_client_id_saved';
+const STORAGE_KEY_INSTANCE_URL = 'sf_instance_url_saved';
 
 function Login({ onLoginSuccess }) {
   const [instanceUrl, setInstanceUrl] = useState('https://login.salesforce.com');
-  const [clientId, setClientId] = useState(DEFAULT_CLIENT_ID);
-  const [showSetup, setShowSetup] = useState(!DEFAULT_CLIENT_ID);
+  const [clientId, setClientId] = useState('');
+  const [showSetup, setShowSetup] = useState(false);
   const [error, setError] = useState('');
+
+  // Load saved Client ID and instance URL from localStorage
+  useEffect(() => {
+    const savedClientId = localStorage.getItem(STORAGE_KEY_CLIENT_ID);
+    const savedInstanceUrl = localStorage.getItem(STORAGE_KEY_INSTANCE_URL);
+
+    if (savedClientId) {
+      setClientId(savedClientId);
+      console.log('Loaded saved Client ID from localStorage');
+    } else {
+      setShowSetup(true);
+    }
+
+    if (savedInstanceUrl) {
+      setInstanceUrl(savedInstanceUrl);
+    }
+  }, []);
 
   // Handle OAuth login
   const handleOAuthLogin = () => {
@@ -22,6 +40,11 @@ function Login({ onLoginSuccess }) {
     try {
       setError('');
       console.log('Initiating OAuth flow...');
+
+      // Save Client ID and instance URL to localStorage for future use
+      localStorage.setItem(STORAGE_KEY_CLIENT_ID, clientId);
+      localStorage.setItem(STORAGE_KEY_INSTANCE_URL, instanceUrl);
+      console.log('Saved Client ID to localStorage');
 
       // Store OAuth config in sessionStorage for callback
       sessionStorage.setItem('sf_client_id', clientId);
@@ -40,6 +63,17 @@ function Login({ onLoginSuccess }) {
       console.error('OAuth initialization error:', err);
       setError('Error initializing OAuth: ' + err.message);
     }
+  };
+
+  // Clear saved credentials
+  const handleClearCredentials = () => {
+    localStorage.removeItem(STORAGE_KEY_CLIENT_ID);
+    localStorage.removeItem(STORAGE_KEY_INSTANCE_URL);
+    setClientId('');
+    setInstanceUrl('https://login.salesforce.com');
+    setShowSetup(true);
+    setError('');
+    console.log('Cleared saved credentials');
   };
 
   return (
@@ -68,7 +102,7 @@ function Login({ onLoginSuccess }) {
             </select>
           </div>
 
-          {showSetup && (
+          {showSetup ? (
             <div className="form-group">
               <label htmlFor="clientId">Connected App Client ID</label>
               <input
@@ -86,6 +120,23 @@ function Login({ onLoginSuccess }) {
                 </a>
               </small>
             </div>
+          ) : (
+            clientId && (
+              <div className="saved-credentials">
+                <div className="saved-info">
+                  <span className="saved-label">✓ Client ID Saved</span>
+                  <button onClick={() => setShowSetup(true)} className="change-button">
+                    Change
+                  </button>
+                </div>
+                <small className="form-hint">
+                  Using saved credentials •{' '}
+                  <a href="#" onClick={(e) => { e.preventDefault(); handleClearCredentials(); }}>
+                    Clear saved data
+                  </a>
+                </small>
+              </div>
+            )
           )}
 
           <button
