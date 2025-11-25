@@ -30,7 +30,7 @@ function Login({ onLoginSuccess }) {
   }, []);
 
   // Handle OAuth login
-  const handleOAuthLogin = () => {
+  const handleOAuthLogin = async () => {
     if (!clientId) {
       setError('Please enter your Connected App Client ID');
       setShowSetup(true);
@@ -54,7 +54,7 @@ function Login({ onLoginSuccess }) {
       console.log('Redirect URI:', redirectUri);
 
       salesforceService.initializeOAuth(clientId, redirectUri, instanceUrl);
-      const authUrl = salesforceService.getAuthorizationUrl();
+      const authUrl = await salesforceService.getAuthorizationUrl();
       console.log('Redirecting to:', authUrl);
 
       // Redirect to Salesforce login page
