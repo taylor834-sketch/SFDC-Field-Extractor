@@ -10,6 +10,8 @@ const STORAGE_KEY_INSTANCE_URL = 'sf_instance_url_saved';
 
 function Login({ onLoginSuccess }) {
   const [instanceUrl, setInstanceUrl] = useState('https://login.salesforce.com');
+  const [useCustomDomain, setUseCustomDomain] = useState(false);
+  const [customDomain, setCustomDomain] = useState('');
   const [error, setError] = useState('');
 
   // Load saved instance URL from localStorage
@@ -17,6 +19,11 @@ function Login({ onLoginSuccess }) {
     const savedInstanceUrl = localStorage.getItem(STORAGE_KEY_INSTANCE_URL);
     if (savedInstanceUrl) {
       setInstanceUrl(savedInstanceUrl);
+      // Check if it's a custom domain
+      if (!savedInstanceUrl.includes('login.salesforce.com') && !savedInstanceUrl.includes('test.salesforce.com')) {
+        setUseCustomDomain(true);
+        setCustomDomain(savedInstanceUrl);
+      }
     }
   }, []);
 
@@ -24,19 +31,34 @@ function Login({ onLoginSuccess }) {
   const handleOAuthLogin = async () => {
     try {
       setError('');
+
+      // Determine the login URL to use
+      let loginUrl = instanceUrl;
+      if (useCustomDomain) {
+        if (!customDomain) {
+          setError('Please enter your My Domain URL');
+          return;
+        }
+        // Ensure it starts with https://
+        loginUrl = customDomain.startsWith('https://') ? customDomain : `https://${customDomain}`;
+        // Remove trailing slash if present
+        loginUrl = loginUrl.replace(/\/$/, '');
+      }
+
       console.log('Initiating OAuth flow...');
+      console.log('Login URL:', loginUrl);
 
       // Save instance URL to localStorage for future use
-      localStorage.setItem(STORAGE_KEY_INSTANCE_URL, instanceUrl);
+      localStorage.setItem(STORAGE_KEY_INSTANCE_URL, loginUrl);
 
       // Store OAuth config in sessionStorage for callback
       sessionStorage.setItem('sf_client_id', CLIENT_ID);
-      sessionStorage.setItem('sf_login_url', instanceUrl);
+      sessionStorage.setItem('sf_login_url', loginUrl);
 
       const redirectUri = window.location.origin + window.location.pathname;
       console.log('Redirect URI:', redirectUri);
 
-      salesforceService.initializeOAuth(CLIENT_ID, redirectUri, instanceUrl);
+      salesforceService.initializeOAuth(CLIENT_ID, redirectUri, loginUrl);
       const authUrl = await salesforceService.getAuthorizationUrl();
       console.log('Redirecting to:', authUrl);
 
@@ -62,17 +84,46 @@ function Login({ onLoginSuccess }) {
 
         <div className="oauth-form">
           <div className="form-group">
-            <label htmlFor="instanceUrl">Instance Type</label>
-            <select
-              id="instanceUrl"
-              value={instanceUrl}
-              onChange={(e) => setInstanceUrl(e.target.value)}
-              className="form-input"
-            >
-              <option value="https://login.salesforce.com">Production/Developer</option>
-              <option value="https://test.salesforce.com">Sandbox</option>
-            </select>
+            <label>
+              <input
+                type="checkbox"
+                checked={useCustomDomain}
+                onChange={(e) => setUseCustomDomain(e.target.checked)}
+                style={{ marginRight: '8px' }}
+              />
+              I use My Domain (custom domain)
+            </label>
           </div>
+
+          {!useCustomDomain ? (
+            <div className="form-group">
+              <label htmlFor="instanceUrl">Instance Type</label>
+              <select
+                id="instanceUrl"
+                value={instanceUrl}
+                onChange={(e) => setInstanceUrl(e.target.value)}
+                className="form-input"
+              >
+                <option value="https://login.salesforce.com">Production/Developer</option>
+                <option value="https://test.salesforce.com">Sandbox</option>
+              </select>
+            </div>
+          ) : (
+            <div className="form-group">
+              <label htmlFor="customDomain">My Domain URL</label>
+              <input
+                id="customDomain"
+                type="text"
+                value={customDomain}
+                onChange={(e) => setCustomDomain(e.target.value)}
+                placeholder="https://fexa.my.salesforce.com"
+                className="form-input"
+              />
+              <small className="form-hint">
+                Enter your full My Domain URL (e.g., https://yourcompany.my.salesforce.com)
+              </small>
+            </div>
+          )}
 
           <button
             onClick={handleOAuthLogin}
