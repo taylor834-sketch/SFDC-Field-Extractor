@@ -16,12 +16,20 @@ function App() {
   const [errorCount, setErrorCount] = useState(0);
 
   useEffect(() => {
-    // Check if already authenticated
-    if (salesforceService.isConnected()) {
-      setIsAuthenticated(true);
-      setUserInfo(salesforceService.getUserInfo());
+    // Check for OAuth callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+
+    if (code) {
+      handleOAuthCallback(code);
+    } else {
+      // Check if already authenticated
+      if (salesforceService.isConnected()) {
+        setIsAuthenticated(true);
+        setUserInfo(salesforceService.getUserInfo());
+      }
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -35,6 +43,35 @@ function App() {
 
     return () => unsubscribe();
   }, []);
+
+  const handleOAuthCallback = async (code) => {
+    try {
+      // Get stored OAuth config from sessionStorage
+      const clientId = sessionStorage.getItem('sf_client_id');
+      const loginUrl = sessionStorage.getItem('sf_login_url');
+      const redirectUri = window.location.origin + window.location.pathname;
+
+      if (!clientId) {
+        throw new Error('OAuth configuration not found');
+      }
+
+      salesforceService.initializeOAuth(clientId, redirectUri, loginUrl);
+      await salesforceService.authorizeWithCode(code);
+
+      setIsAuthenticated(true);
+      setUserInfo(salesforceService.getUserInfo());
+
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      errorLogger.log(error, { context: 'OAuth callback' });
+      alert('Authentication failed: ' + error.message);
+      window.location.href = window.location.pathname;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
@@ -75,7 +112,7 @@ function App() {
         <div className="header-content">
           <div className="app-title-section">
             <h1>Salesforce Field Analyzer</h1>
-            <span className="app-version">v2.0.0</span>
+            <span className="app-version">v2.1.0</span>
           </div>
           {userInfo && (
             <div className="user-info">
