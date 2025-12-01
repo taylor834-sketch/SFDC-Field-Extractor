@@ -119,11 +119,11 @@ function Login({ onLoginSuccess }) {
                 type="text"
                 value={customDomain}
                 onChange={(e) => setCustomDomain(e.target.value)}
-                placeholder="https://fexa.my.salesforce.com"
+                placeholder="https://yourcompany.my.salesforce.com"
                 className="form-input"
               />
               <small className="form-hint">
-                Enter your full My Domain URL (e.g., https://yourcompany.my.salesforce.com)
+                Enter your full My Domain URL (e.g., https://acme.my.salesforce.com)
               </small>
             </div>
           )}
