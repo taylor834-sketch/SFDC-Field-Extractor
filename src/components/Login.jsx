@@ -201,6 +201,8 @@ function Login({ onLoginSuccess }) {
           <div className="form-group">
             <label>
               <input
+                id="useCustomDomain"
+                name="useCustomDomain"
                 type="checkbox"
                 checked={useCustomDomain}
                 onChange={(e) => setUseCustomDomain(e.target.checked)}
@@ -262,6 +264,8 @@ function Login({ onLoginSuccess }) {
             <div className="form-group">
               <label>
                 <input
+                  id="useCustomDomainOAuth"
+                  name="useCustomDomainOAuth"
                   type="checkbox"
                   checked={useCustomDomain}
                   onChange={(e) => setUseCustomDomain(e.target.checked)}
