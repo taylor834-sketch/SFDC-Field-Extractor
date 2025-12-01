@@ -17,9 +17,24 @@ export default async function handler(req, res) {
   try {
     const { code, clientId, redirectUri, loginUrl, codeVerifier } = req.body;
 
+    console.log('OAuth callback received:', {
+      hasCode: !!code,
+      hasClientId: !!clientId,
+      hasRedirectUri: !!redirectUri,
+      hasLoginUrl: !!loginUrl,
+      hasCodeVerifier: !!codeVerifier
+    });
+
     if (!code || !clientId || !redirectUri || !codeVerifier) {
+      const missing = [];
+      if (!code) missing.push('code');
+      if (!clientId) missing.push('clientId');
+      if (!redirectUri) missing.push('redirectUri');
+      if (!codeVerifier) missing.push('codeVerifier');
+
       return res.status(400).json({
-        error: 'Missing required parameters'
+        error: 'Missing required parameters',
+        missing: missing
       });
     }
 

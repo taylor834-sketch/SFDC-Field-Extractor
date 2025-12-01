@@ -65,7 +65,15 @@ function App() {
       window.history.replaceState({}, document.title, window.location.pathname);
     } catch (error) {
       console.error('OAuth callback error:', error);
-      alert('Authentication failed: ' + error.message);
+      errorLogger.log(error, { context: 'OAuth callback' });
+
+      // Show more detailed error message
+      let errorMsg = 'Authentication failed: ' + error.message;
+      if (error.message.includes('Missing required parameters')) {
+        errorMsg += '\n\nPlease try logging in again. If the issue persists, check the Error Log for details.';
+      }
+      alert(errorMsg);
+
       window.location.href = window.location.pathname;
     } finally {
       setIsLoading(false);

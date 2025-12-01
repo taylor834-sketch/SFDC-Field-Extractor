@@ -102,7 +102,9 @@ class SalesforceService {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Token exchange failed');
+      const errorMsg = errorData.error || 'Token exchange failed';
+      const missingParams = errorData.missing ? ` (Missing: ${errorData.missing.join(', ')})` : '';
+      throw new Error(errorMsg + missingParams);
     }
 
     const tokenData = await response.json();
