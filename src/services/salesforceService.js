@@ -75,10 +75,44 @@ class SalesforceService {
       throw new Error('Code verifier not found. Please try logging in again.');
     }
 
-    this.conn = new jsforce.Connection({ oauth2: this.oauth2 });
+    // Get OAuth configuration
+    const clientId = sessionStorage.getItem('sf_client_id');
+    const loginUrl = sessionStorage.getItem('sf_login_url') || 'https://login.salesforce.com';
+    const redirectUri = window.location.origin + window.location.pathname;
 
-    // Authorize with the code and code verifier
-    await this.conn.authorize(code, { code_verifier: codeVerifier });
+    // Determine the API endpoint URL
+    const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000/api/oauth-callback'
+      : '/api/oauth-callback';
+
+    // Exchange code for tokens via serverless function
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        code,
+        clientId,
+        redirectUri,
+        loginUrl,
+        codeVerifier
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Token exchange failed');
+    }
+
+    const tokenData = await response.json();
+
+    // Create connection with the tokens
+    this.conn = new jsforce.Connection({
+      instanceUrl: tokenData.instance_url,
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token
+    });
 
     // Clean up the code verifier from session storage
     sessionStorage.removeItem('sf_code_verifier');
