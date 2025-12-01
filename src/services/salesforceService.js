@@ -55,7 +55,7 @@ class SalesforceService {
 
     // Build authorization URL with PKCE parameters
     const authUrl = this.oauth2.getAuthorizationUrl({
-      scope: 'api',
+      scope: 'full refresh_token',
       code_challenge: codeChallenge,
       code_challenge_method: 'S256'
     });
