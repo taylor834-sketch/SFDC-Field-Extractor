@@ -15,7 +15,7 @@ export default defineConfig({
       },
     }),
   ],
-  base: '/SFDC-Field-Extractor/', // GitHub Pages base path
+  base: '/', // Vercel deployment base path
   define: {
     'process.env': {},
   },
