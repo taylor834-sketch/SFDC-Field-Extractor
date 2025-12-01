@@ -15,22 +15,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { code, clientId, redirectUri, loginUrl, codeVerifier } = req.body;
+    const { code, clientId, redirectUri, loginUrl } = req.body;
 
     console.log('OAuth callback received:', {
       hasCode: !!code,
       hasClientId: !!clientId,
       hasRedirectUri: !!redirectUri,
-      hasLoginUrl: !!loginUrl,
-      hasCodeVerifier: !!codeVerifier
+      hasLoginUrl: !!loginUrl
     });
 
-    if (!code || !clientId || !redirectUri || !codeVerifier) {
+    if (!code || !clientId || !redirectUri) {
       const missing = [];
       if (!code) missing.push('code');
       if (!clientId) missing.push('clientId');
       if (!redirectUri) missing.push('redirectUri');
-      if (!codeVerifier) missing.push('codeVerifier');
 
       return res.status(400).json({
         error: 'Missing required parameters',
@@ -38,15 +36,24 @@ export default async function handler(req, res) {
       });
     }
 
+    // Get client secret from environment variable
+    const clientSecret = process.env.SALESFORCE_CONSUMER_SECRET;
+    if (!clientSecret) {
+      console.error('SALESFORCE_CONSUMER_SECRET not configured');
+      return res.status(500).json({
+        error: 'Server configuration error'
+      });
+    }
+
     const tokenUrl = `${loginUrl}/services/oauth2/token`;
 
-    // Exchange authorization code for access token
+    // Exchange authorization code for access token (Web Server Flow)
     const params = new URLSearchParams({
       grant_type: 'authorization_code',
       code: code,
       client_id: clientId,
-      redirect_uri: redirectUri,
-      code_verifier: codeVerifier
+      client_secret: clientSecret,
+      redirect_uri: redirectUri
     });
 
     console.log('Requesting token from:', tokenUrl);
@@ -55,7 +62,7 @@ export default async function handler(req, res) {
       client_id: clientId,
       redirect_uri: redirectUri,
       code_length: code?.length,
-      code_verifier_length: codeVerifier?.length
+      has_client_secret: !!clientSecret
     });
 
     const response = await fetch(tokenUrl, {

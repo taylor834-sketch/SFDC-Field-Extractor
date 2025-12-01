@@ -7,30 +7,6 @@ class SalesforceService {
     this.oauth2 = null;
   }
 
-  // Generate a random string for PKCE code verifier
-  generateCodeVerifier() {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    return this.base64URLEncode(array);
-  }
-
-  // Base64 URL encode
-  base64URLEncode(buffer) {
-    const base64 = btoa(String.fromCharCode(...buffer));
-    return base64
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
-  }
-
-  // Generate code challenge from verifier
-  async generateCodeChallenge(verifier) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(verifier);
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    return this.base64URLEncode(new Uint8Array(hash));
-  }
-
   // Initialize OAuth2 connection
   initializeOAuth(clientId, redirectUri, loginUrl = 'https://login.salesforce.com') {
     this.oauth2 = new jsforce.OAuth2({
@@ -40,39 +16,24 @@ class SalesforceService {
     });
   }
 
-  // Get authorization URL with PKCE
+  // Get authorization URL (Web Server Flow - no PKCE)
   async getAuthorizationUrl() {
     if (!this.oauth2) {
       throw new Error('OAuth2 not initialized');
     }
 
-    // Generate PKCE code verifier and challenge
-    const codeVerifier = this.generateCodeVerifier();
-    const codeChallenge = await this.generateCodeChallenge(codeVerifier);
-
-    // Store code verifier for later use during token exchange
-    sessionStorage.setItem('sf_code_verifier', codeVerifier);
-
-    // Build authorization URL with PKCE parameters
+    // Build authorization URL without PKCE
     const authUrl = this.oauth2.getAuthorizationUrl({
-      scope: 'full refresh_token',
-      code_challenge: codeChallenge,
-      code_challenge_method: 'S256'
+      scope: 'full refresh_token'
     });
 
     return authUrl;
   }
 
-  // Authorize with OAuth code
+  // Authorize with OAuth code (Web Server Flow)
   async authorizeWithCode(code) {
     if (!this.oauth2) {
       throw new Error('OAuth2 not initialized');
-    }
-
-    // Retrieve the code verifier from session storage
-    const codeVerifier = sessionStorage.getItem('sf_code_verifier');
-    if (!codeVerifier) {
-      throw new Error('Code verifier not found. Please try logging in again.');
     }
 
     // Get OAuth configuration
@@ -89,8 +50,7 @@ class SalesforceService {
       code,
       clientId,
       redirectUri,
-      loginUrl,
-      codeVerifier
+      loginUrl
     };
 
     console.log('Sending to serverless function:', {
@@ -98,8 +58,7 @@ class SalesforceService {
       hasCode: !!code,
       hasClientId: !!clientId,
       hasRedirectUri: !!redirectUri,
-      hasLoginUrl: !!loginUrl,
-      hasCodeVerifier: !!codeVerifier
+      hasLoginUrl: !!loginUrl
     });
 
     // Exchange code for tokens via serverless function
@@ -134,9 +93,6 @@ class SalesforceService {
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token
     });
-
-    // Clean up the code verifier from session storage
-    sessionStorage.removeItem('sf_code_verifier');
 
     return this.conn;
   }
