@@ -109,7 +109,10 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <div className="header-content">
-          <h1>Salesforce Field Analyzer</h1>
+          <div className="app-title-section">
+            <h1>Salesforce Field Analyzer</h1>
+            <span className="app-version">v1.0.0</span>
+          </div>
           {userInfo && (
             <div className="user-info">
               <span className="user-name">{userInfo.display_name || userInfo.username}</span>
@@ -143,7 +146,7 @@ function App() {
 
       <footer className="app-footer">
         <p>
-          Built with React and JSForce | v1.0.0 |{' '}
+          Built with React and JSForce |{' '}
           <a
             href="https://github.com/taylor834-sketch/SFDC-Field-Extractor"
             target="_blank"
