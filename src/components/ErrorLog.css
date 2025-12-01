@@ -1,0 +1,274 @@
+.error-log-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.error-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.error-log-title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.error-log-title-section h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #1a202c;
+  font-weight: 700;
+}
+
+.error-count {
+  background: #edf2f7;
+  color: #4a5568;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.error-log-close-button {
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.error-log-close-button:hover {
+  border-color: #cbd5e0;
+  background: #f7fafc;
+}
+
+.error-log-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.error-log-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-button {
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.filter-button:hover {
+  border-color: #cbd5e0;
+  background: #f7fafc;
+}
+
+.filter-button.active {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+}
+
+.error-log-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button {
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.action-button:hover {
+  border-color: #cbd5e0;
+  background: #f7fafc;
+}
+
+.action-button.danger {
+  border-color: #fc8181;
+  color: #c53030;
+}
+
+.action-button.danger:hover {
+  background: #fff5f5;
+  border-color: #f56565;
+}
+
+.error-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+.no-errors {
+  padding: 60px 20px;
+  text-align: center;
+  color: #718096;
+}
+
+.no-errors p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.error-entry {
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.error-entry:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.error-entry.error {
+  border-left: 4px solid #fc8181;
+}
+
+.error-entry.info {
+  border-left: 4px solid #63b3ed;
+}
+
+.error-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.error-entry-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.error-level-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.error-level-badge.error {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.error-level-badge.info {
+  background: #bee3f8;
+  color: #2c5282;
+}
+
+.error-message {
+  color: #2d3748;
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.error-timestamp {
+  color: #718096;
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.error-entry-details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.error-detail-section {
+  margin-bottom: 16px;
+}
+
+.error-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.error-detail-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.error-stack,
+.error-context {
+  background: #2d3748;
+  color: #e2e8f0;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-x: auto;
+  margin: 0;
+  font-family: 'Courier New', monospace;
+}
+
+@media (max-width: 768px) {
+  .error-log-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .error-log-filters,
+  .error-log-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .filter-button,
+  .action-button {
+    flex: 1;
+  }
+
+  .error-entry-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .error-timestamp {
+    align-self: flex-start;
+  }
+}

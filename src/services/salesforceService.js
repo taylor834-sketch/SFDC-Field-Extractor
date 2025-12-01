@@ -1,4 +1,5 @@
 import jsforce from 'jsforce';
+import errorLogger from './errorLogger';
 
 class SalesforceService {
   constructor() {
@@ -88,15 +89,18 @@ class SalesforceService {
   // Login with username and password
   async login(username, password, instanceUrl = 'https://login.salesforce.com') {
     console.log('[SalesforceService] Creating connection with loginUrl:', instanceUrl);
+    errorLogger.logInfo('Attempting Salesforce login', { instanceUrl, username });
     this.conn = new jsforce.Connection({ loginUrl: instanceUrl });
 
     console.log('[SalesforceService] Attempting login...');
     try {
       const userInfo = await this.conn.login(username, password);
       console.log('[SalesforceService] Login successful, userInfo:', userInfo);
+      errorLogger.logInfo('Salesforce login successful', { username });
       return userInfo;
     } catch (error) {
       console.error('[SalesforceService] Login failed:', error);
+      errorLogger.log(error, { context: 'login', username, instanceUrl });
       throw error;
     }
   }
@@ -134,6 +138,7 @@ class SalesforceService {
       return result.records[0];
     } catch (error) {
       console.error('Error fetching field metadata:', error);
+      errorLogger.log(error, { context: 'getFieldMetadata', objectName, fieldName });
       return null;
     }
   }
@@ -157,6 +162,7 @@ class SalesforceService {
       return result.records || [];
     } catch (error) {
       console.error('Error fetching flows:', error);
+      errorLogger.log(error, { context: 'getFlowsUsingField', objectName, fieldName });
       return [];
     }
   }
@@ -178,6 +184,7 @@ class SalesforceService {
       return result.records || [];
     } catch (error) {
       console.error('Error fetching reports:', error);
+      errorLogger.log(error, { context: 'getReportsUsingField', objectName, fieldName });
       return [];
     }
   }
@@ -214,6 +221,7 @@ class SalesforceService {
       return layoutsWithField;
     } catch (error) {
       console.error('Error fetching page layouts:', error);
+      errorLogger.log(error, { context: 'getPageLayoutsUsingField', objectName, fieldName });
       return [];
     }
   }
@@ -238,6 +246,7 @@ class SalesforceService {
       return ((populatedRecords / totalRecords) * 100).toFixed(2);
     } catch (error) {
       console.error('Error calculating field population:', error);
+      errorLogger.log(error, { context: 'getFieldPopulation', objectName, fieldName });
       return 'N/A';
     }
   }
@@ -269,6 +278,7 @@ class SalesforceService {
       };
     } catch (error) {
       console.error('Error getting field usage data:', error);
+      errorLogger.log(error, { context: 'getFieldUsageData', objectName, fieldName });
       throw error;
     }
   }

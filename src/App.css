@@ -87,6 +87,38 @@ body {
   font-weight: 500;
 }
 
+.error-log-button {
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.error-log-button:hover {
+  border-color: #cbd5e0;
+  background: #f7fafc;
+}
+
+.error-badge {
+  background: #fc8181;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
 .logout-button {
   padding: 8px 16px;
   background: white;

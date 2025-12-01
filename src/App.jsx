@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import Login from './components/Login';
 import ObjectSelector from './components/ObjectSelector';
 import FieldAnalyzer from './components/FieldAnalyzer';
+import ErrorLog from './components/ErrorLog';
 import salesforceService from './services/salesforceService';
+import errorLogger from './services/errorLogger';
 import './App.css';
 
 function App() {
@@ -10,6 +12,8 @@ function App() {
   const [selectedObject, setSelectedObject] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showErrorLog, setShowErrorLog] = useState(false);
+  const [errorCount, setErrorCount] = useState(0);
 
   useEffect(() => {
     // Check for OAuth callback
@@ -26,6 +30,18 @@ function App() {
       }
       setIsLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    // Subscribe to error count updates
+    const unsubscribe = errorLogger.subscribe((errors) => {
+      setErrorCount(errors.length);
+    });
+
+    // Set initial error count
+    setErrorCount(errorLogger.getErrorCount());
+
+    return () => unsubscribe();
   }, []);
 
   const handleOAuthCallback = async (code) => {
@@ -97,6 +113,13 @@ function App() {
           {userInfo && (
             <div className="user-info">
               <span className="user-name">{userInfo.display_name || userInfo.username}</span>
+              <button
+                onClick={() => setShowErrorLog(true)}
+                className="error-log-button"
+                title="View Error Log"
+              >
+                Error Log {errorCount > 0 && <span className="error-badge">{errorCount}</span>}
+              </button>
               <button onClick={handleLogout} className="logout-button">
                 Logout
               </button>
@@ -106,7 +129,9 @@ function App() {
       </header>
 
       <main className="app-main">
-        {!selectedObject ? (
+        {showErrorLog ? (
+          <ErrorLog onClose={() => setShowErrorLog(false)} />
+        ) : !selectedObject ? (
           <ObjectSelector onObjectSelected={handleObjectSelected} />
         ) : (
           <FieldAnalyzer
