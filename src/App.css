@@ -82,9 +82,12 @@ body {
 }
 
 .app-version {
-  font-size: 12px;
-  color: #718096;
-  font-weight: 500;
+  font-size: 14px;
+  color: #667eea;
+  font-weight: 600;
+  background: #f0f4ff;
+  padding: 2px 10px;
+  border-radius: 10px;
 }
 
 .user-info {

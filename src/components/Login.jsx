@@ -75,7 +75,7 @@ function Login({ onLoginSuccess }) {
       <div className="login-card">
         <div className="login-title-section">
           <h1>Salesforce Field Analyzer</h1>
-          <span className="login-version">v1.0.0</span>
+          <span className="login-version">v1.0.1</span>
         </div>
         <p className="subtitle">Extract comprehensive field metadata and usage information</p>
 

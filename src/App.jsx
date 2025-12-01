@@ -111,7 +111,7 @@ function App() {
         <div className="header-content">
           <div className="app-title-section">
             <h1>Salesforce Field Analyzer</h1>
-            <span className="app-version">v1.0.0</span>
+            <span className="app-version">v1.0.1</span>
           </div>
           {userInfo && (
             <div className="user-info">
