@@ -49,6 +49,15 @@ export default async function handler(req, res) {
       code_verifier: codeVerifier
     });
 
+    console.log('Requesting token from:', tokenUrl);
+    console.log('Request params:', {
+      grant_type: 'authorization_code',
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      code_length: code?.length,
+      code_verifier_length: codeVerifier?.length
+    });
+
     const response = await fetch(tokenUrl, {
       method: 'POST',
       headers: {
@@ -56,6 +65,8 @@ export default async function handler(req, res) {
       },
       body: params.toString()
     });
+
+    console.log('Salesforce response status:', response.status);
 
     const data = await response.json();
 

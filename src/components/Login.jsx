@@ -2,21 +2,24 @@ import { useState, useEffect } from 'react';
 import salesforceService from '../services/salesforceService';
 import './Login.css';
 
-// Hardcoded Client ID for the Connected App
-const CLIENT_ID = '3MVG9dAEux2v1sLve6wdY22rLOsRdgF1W2jOgv53YJPFF19sULOhGzfa811jiDkGmkuoKPJiuFxjppiiTbPNo';
-
-// LocalStorage key for instance URL
+// LocalStorage keys
 const STORAGE_KEY_INSTANCE_URL = 'sf_instance_url_saved';
+const STORAGE_KEY_USERNAME = 'sf_username_saved';
 
 function Login({ onLoginSuccess }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [instanceUrl, setInstanceUrl] = useState('https://login.salesforce.com');
   const [useCustomDomain, setUseCustomDomain] = useState(false);
   const [customDomain, setCustomDomain] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Load saved instance URL from localStorage
+  // Load saved values from localStorage
   useEffect(() => {
     const savedInstanceUrl = localStorage.getItem(STORAGE_KEY_INSTANCE_URL);
+    const savedUsername = localStorage.getItem(STORAGE_KEY_USERNAME);
+
     if (savedInstanceUrl) {
       setInstanceUrl(savedInstanceUrl);
       // Check if it's a custom domain
@@ -25,18 +28,31 @@ function Login({ onLoginSuccess }) {
         setCustomDomain(savedInstanceUrl);
       }
     }
+
+    if (savedUsername) {
+      setUsername(savedUsername);
+    }
   }, []);
 
-  // Handle OAuth login
-  const handleOAuthLogin = async () => {
-    try {
-      setError('');
+  // Handle username/password login
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
+    if (!username || !password) {
+      setError('Please enter username and password');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
       // Determine the login URL to use
       let loginUrl = instanceUrl;
       if (useCustomDomain) {
         if (!customDomain) {
           setError('Please enter your My Domain URL');
+          setIsLoading(false);
           return;
         }
         // Ensure it starts with https://
@@ -45,28 +61,22 @@ function Login({ onLoginSuccess }) {
         loginUrl = loginUrl.replace(/\/$/, '');
       }
 
-      console.log('Initiating OAuth flow...');
-      console.log('Login URL:', loginUrl);
+      console.log('Logging in to:', loginUrl);
 
-      // Save instance URL to localStorage for future use
+      // Login with username and password
+      await salesforceService.login(username, password, loginUrl);
+
+      // Save preferences to localStorage
       localStorage.setItem(STORAGE_KEY_INSTANCE_URL, loginUrl);
+      localStorage.setItem(STORAGE_KEY_USERNAME, username);
 
-      // Store OAuth config in sessionStorage for callback
-      sessionStorage.setItem('sf_client_id', CLIENT_ID);
-      sessionStorage.setItem('sf_login_url', loginUrl);
-
-      const redirectUri = window.location.origin + window.location.pathname;
-      console.log('Redirect URI:', redirectUri);
-
-      salesforceService.initializeOAuth(CLIENT_ID, redirectUri, loginUrl);
-      const authUrl = await salesforceService.getAuthorizationUrl();
-      console.log('Redirecting to:', authUrl);
-
-      // Redirect to Salesforce login page
-      window.location.href = authUrl;
+      // Call success callback
+      onLoginSuccess();
     } catch (err) {
-      console.error('OAuth initialization error:', err);
-      setError('Error initializing OAuth: ' + err.message);
+      console.error('Login error:', err);
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -75,7 +85,7 @@ function Login({ onLoginSuccess }) {
       <div className="login-card">
         <div className="login-title-section">
           <h1>Salesforce Field Analyzer</h1>
-          <span className="login-version">v1.1.0</span>
+          <span className="login-version">v2.0.0</span>
         </div>
         <p className="subtitle">Extract comprehensive field metadata and usage information</p>
 
@@ -85,7 +95,36 @@ function Login({ onLoginSuccess }) {
           </div>
         )}
 
-        <div className="oauth-form">
+        <form onSubmit={handleLogin} className="login-form">
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="user@example.com"
+              className="form-input"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password + Security Token"
+              className="form-input"
+              disabled={isLoading}
+            />
+            <small className="form-hint">
+              For API access, append your security token to your password
+            </small>
+          </div>
+
           <div className="form-group">
             <label>
               <input
@@ -93,6 +132,7 @@ function Login({ onLoginSuccess }) {
                 checked={useCustomDomain}
                 onChange={(e) => setUseCustomDomain(e.target.checked)}
                 style={{ marginRight: '8px' }}
+                disabled={isLoading}
               />
               I use My Domain (custom domain)
             </label>
@@ -106,6 +146,7 @@ function Login({ onLoginSuccess }) {
                 value={instanceUrl}
                 onChange={(e) => setInstanceUrl(e.target.value)}
                 className="form-input"
+                disabled={isLoading}
               >
                 <option value="https://login.salesforce.com">Production/Developer</option>
                 <option value="https://test.salesforce.com">Sandbox</option>
@@ -121,6 +162,7 @@ function Login({ onLoginSuccess }) {
                 onChange={(e) => setCustomDomain(e.target.value)}
                 placeholder="https://yourcompany.my.salesforce.com"
                 className="form-input"
+                disabled={isLoading}
               />
               <small className="form-hint">
                 Enter your full My Domain URL (e.g., https://acme.my.salesforce.com)
@@ -129,26 +171,24 @@ function Login({ onLoginSuccess }) {
           )}
 
           <button
-            onClick={handleOAuthLogin}
+            type="submit"
             className="login-button"
+            disabled={isLoading}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '8px' }}>
-              <path d="M12.015 2C6.502 2 2 6.502 2 12.015c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.137 20.193 22 16.44 22 12.015 22 6.502 17.498 2 12.015 2z"/>
-            </svg>
-            Login with Salesforce
+            {isLoading ? 'Logging in...' : 'Login to Salesforce'}
           </button>
 
           <div className="login-info">
             <p>
-              <strong>No setup required!</strong> Just select your instance type and login with your Salesforce credentials.
+              <strong>No setup required!</strong> Just enter your Salesforce credentials and start analyzing fields.
             </p>
           </div>
-        </div>
+        </form>
 
         <div className="login-footer">
           <p>
-            <a href="https://github.com/taylor834-sketch/SFDC-Field-Extractor#setup" target="_blank" rel="noopener noreferrer">
-              View Full Documentation
+            <a href="https://help.salesforce.com/s/articleView?id=000385436&type=1" target="_blank" rel="noopener noreferrer">
+              How to get your Security Token
             </a>
           </p>
         </div>
