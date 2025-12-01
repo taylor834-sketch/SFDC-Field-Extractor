@@ -85,29 +85,48 @@ class SalesforceService {
       ? 'http://localhost:3000/api/oauth-callback'
       : '/api/oauth-callback';
 
+    const requestBody = {
+      code,
+      clientId,
+      redirectUri,
+      loginUrl,
+      codeVerifier
+    };
+
+    console.log('Sending to serverless function:', {
+      apiUrl,
+      hasCode: !!code,
+      hasClientId: !!clientId,
+      hasRedirectUri: !!redirectUri,
+      hasLoginUrl: !!loginUrl,
+      hasCodeVerifier: !!codeVerifier
+    });
+
     // Exchange code for tokens via serverless function
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        code,
-        clientId,
-        redirectUri,
-        loginUrl,
-        codeVerifier
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+      }
+
+      console.error('Token exchange failed:', errorData);
       const errorMsg = errorData.error || 'Token exchange failed';
       const missingParams = errorData.missing ? ` (Missing: ${errorData.missing.join(', ')})` : '';
       throw new Error(errorMsg + missingParams);
     }
 
     const tokenData = await response.json();
+    console.log('Token exchange successful:', { hasAccessToken: !!tokenData.access_token });
 
     // Create connection with the tokens
     this.conn = new jsforce.Connection({
