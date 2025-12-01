@@ -143,7 +143,7 @@ function App() {
 
       <footer className="app-footer">
         <p>
-          Built with React and JSForce |{' '}
+          Built with React and JSForce | v1.0.0 |{' '}
           <a
             href="https://github.com/taylor834-sketch/SFDC-Field-Extractor"
             target="_blank"
